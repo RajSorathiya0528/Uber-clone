@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './Database/db.js';
 import userRouter from './Routes/User.route.js';
+import captainRouter from './Routes/Captain.route.js';
 import cookieParser from "cookie-parser";
 
 dotenv.config();
@@ -17,6 +18,7 @@ app.use(cookieParser());
 connectDB();
 
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/captains', captainRouter);
 
 app.get('/',(req, res) => {
     res.send("hello world");
