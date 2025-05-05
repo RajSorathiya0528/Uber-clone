@@ -1,6 +1,8 @@
 import User from "../models/User.model.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import Captain from "../models/Captain.model.js";
+import BlackListToken from "../models/BlacklistToken.model.js";
 
 
 dotenv.config();
@@ -16,7 +18,7 @@ const authUser = async (req, res, next) => {
         })
     }
 
-    const isBlacklistedToken = await User.findOne({ token });
+    const isBlacklistedToken = await BlackListToken.findOne({ token });
     if(isBlacklistedToken) {
         return res.status(401).json({
             success : false,
@@ -38,4 +40,40 @@ const authUser = async (req, res, next) => {
     }
 }
 
-export default authUser;
+const authCaptain = async (req, res, next ) => {
+    const token = req.cookies.captainToken;
+    if(!token) {
+        res.status(401).json({
+            success : false,
+            message : "Unauthorized access"
+        })
+    }
+
+    const isBlacklistedToken = await BlackListToken.findOne({ token })
+
+    if(isBlacklistedToken) {
+        return res.status(401).json({
+            success : false,
+            message : "unauthorized access"
+        })
+    }
+
+    try {
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        const captain = await Captain.findById(decodedToken._id);
+        req.captain = captain;
+        return next()
+    } catch(error) {
+        return res.status(401).json({
+            success : false,
+            message : "Unauthorized access",
+            error : error.message
+        })
+    }
+
+}
+
+export {
+    authUser,
+    authCaptain
+}
