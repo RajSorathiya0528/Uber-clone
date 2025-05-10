@@ -1,12 +1,17 @@
 import User from "../models/User.model.js";
+import mongoose from "mongoose";
 import createUser from "../Services/User.service.js"
 import { validationResult } from "express-validator"
 import  BlackListToken from "../models/BlacklistToken.model.js"
 
 const registerUser = async (req, res, next) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
     try {
         const errors = validationResult( req );
         if(!errors.isEmpty()){
+            await session.abortTransaction();
+            session.endSession();
             return res.status(400).json({
                 errors : errors.array()
             })
@@ -16,6 +21,8 @@ const registerUser = async (req, res, next) => {
 
         const isUserAlreadyExist = await User.findOne( { email } );
         if(isUserAlreadyExist){
+            await session.abortTransaction();
+            session.endSession();
             return res.status(400).json({
                 message : "User already exist with this email",
                 success : false
@@ -27,7 +34,9 @@ const registerUser = async (req, res, next) => {
             fullname,
             email,
             password : hashPasswordValue
-        });
+        },
+        session
+        );
 
         const token = user.generateAuthToken();
         res.status(201).json({
@@ -37,6 +46,8 @@ const registerUser = async (req, res, next) => {
         })
 
     } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
         res.status(500).json({
             success : false,
             message : "internal server error",
@@ -79,7 +90,11 @@ const loginUser = async (req, res, next) => {
     }
 
     const token = user.generateAuthToken()
-    res.cookie("token",token)
+    res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production", // use true in production with HTTPS
+        sameSite: "lax", // or 'strict' if needed
+    });
 
     res.status(200).json({
         success : true,
@@ -116,8 +131,14 @@ const getUserProfile = async (req, res, next) => {
 }
 
 const logoutUser = async (req, res, next) => {
-    res.clearCookie('token')
-    const token = req.cookies.token;
+    // Attempt to get token from cookie or header
+    const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+    if(!token){
+        return res.status(401).json({
+            success : false,
+            message : "Unauthorized access"
+        })
+    }
     const blackListToken = await BlackListToken.create({ token });
     if(!blackListToken){
         return res.status(500).json({
@@ -127,9 +148,16 @@ const logoutUser = async (req, res, next) => {
     }
     await blackListToken.save()
 
+    // Clear cookie if exists.
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax"
+    });
+
     res.status(200).json({
         success : true,
-        message : "logout Successfully"
+        message : "Logout Successfully"
     })
 }
 
