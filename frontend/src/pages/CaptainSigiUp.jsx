@@ -1,6 +1,8 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useContext } from 'react'
+import axios from 'axios'
+import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { CaptainContext } from '../context/Captaincontext'
 
 function CaptainSigiUp() {
   const [email, setEmail] = useState('')
@@ -12,26 +14,45 @@ function CaptainSigiUp() {
   const [vehicleNumber, setVehicleNumber] = useState('')
   const [vehicleType, setVehicleType] = useState('')
   const [vehicleModel, setVehicleModel] = useState('')
-  const [captainData, setCaptainData] = useState({})
+  const navigate = useNavigate()
 
+  const { captain, setCaptain } = useContext(CaptainContext)
+
+  // filepath: f:\Uber\frontend\src\pages\CaptainSigiUp.jsx
   const submitHandler = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     const data = {
       email: email,
-      fullName :{
-        firstName: firstName,
-        lastName: lastName
+      fullName: {
+        firstname: firstName,
+        lastname: lastName
       },
       password: password,
-      color: color,
-      capacity: capacity,
-      vehicleNumber: vehicleNumber,
-      vehicleType: vehicleType,
-      vehicleModel: vehicleModel
+      vehicle: {
+        color: color,
+        capacity: capacity,
+        numberPlate: vehicleNumber,
+        vehicleType: vehicleType,
+        model: vehicleModel
+      }
     };
-    setCaptainData(data)
-    console.log(captainData)
-  }
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/api/v1/captains/register`,
+        data
+      );
+      if (response.status === 201) {
+        setCaptain(data.captain);
+        localStorage.setItem("captainToken", response.data.captainToken);
+        alert("account created successfully");
+        navigate("/home");
+      }
+    } catch (error) {
+      console.error("Error registering captain:", error.response || error.message);
+      alert("There was an error creating your account. Please try again later.");
+    }
+  };
+
   return (
     <div class='h-screen p-7'>
       <img src="https://imgs.search.brave.com/FZq7YFqzVbkjhipVXmxfaZY-RmPwy3wsG0WV1UdM8bs/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9sb2dv/cy13b3JsZC5uZXQv/d3AtY29udGVudC91/cGxvYWRzLzIwMjAv/MDUvVWJlci1Mb2dv/LTcwMHgzOTQucG5n" alt="" class='w-18' />
