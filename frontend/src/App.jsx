@@ -5,9 +5,11 @@ import UserLogin from './pages/UserLogin.jsx'
 import UserSignUp from './pages/UserSignUp.jsx'
 import CaptainLogin from './pages/CaptainLogin.jsx'
 import CaptainSigiUp from './pages/CaptainSigiUp'
+import CaptainHome from './pages/CaptainHome.jsx'
 import UserProtectedWraper from './pages/UserProtectedWraper.jsx'
 import Start from './pages/Start.jsx'
 import UserLogout from './pages/UserLogout.jsx'
+
 
 function App() {
 
@@ -29,6 +31,9 @@ function App() {
             <UserLogout/>
           </UserProtectedWraper>
          } />
+         <Route path='/captainHome' element={
+            <CaptainHome/>
+          } />
       </Routes>
     </div>
   )

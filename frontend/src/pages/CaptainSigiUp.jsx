@@ -36,16 +36,28 @@ function CaptainSigiUp() {
         model: vehicleModel
       }
     };
+
+    setEmail('');
+    setFirstName('');
+    setLastName('');
+    setPassword('');
+    setColor('');
+    setCapacity('');
+    setVehicleNumber('');
+    setVehicleType('');
+    setVehicleModel('');
+
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/api/v1/captains/register`,
         data
       );
       if (response.status === 201) {
-        setCaptain(data.captain);
-        localStorage.setItem("captainToken", response.data.captainToken);
-        alert("account created successfully");
-        navigate("/home");
+        const data = response.data;
+        setCaptain(data.captain)
+        localStorage.setItem('token', data.token);
+        alert("Captain account created successfully!");
+        navigate('/CaptainHome');
       }
     } catch (error) {
       console.error("Error registering captain:", error.response || error.message);
@@ -58,7 +70,7 @@ function CaptainSigiUp() {
       <img src="https://imgs.search.brave.com/FZq7YFqzVbkjhipVXmxfaZY-RmPwy3wsG0WV1UdM8bs/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9sb2dv/cy13b3JsZC5uZXQv/d3AtY29udGVudC91/cGxvYWRzLzIwMjAv/MDUvVWJlci1Mb2dv/LTcwMHgzOTQucG5n" alt="" class='w-18' />
       <div>
         <h3 class='text-3xl text-center mt-3 font-semibold text-gray-800 pt-2'>Connect With Uber</h3>
-        <Link to='/captainLogin' class='flex flex-col items-center text-blue-700'>Alreadr Have An Account? Login</Link>
+        <Link to='/CaptainLogin' class='flex flex-col items-center text-blue-700'>Alreadr Have An Account? Login</Link>
         <h3 class='text-3xl text-center mt-3 font-semibold text-green-600'>Captain Detail</h3>
         <form action="" onSubmit={submitHandler}>
           <h3 class='text-2xl font-semibold text-gray-800 pt-2'>What's your email</h3>

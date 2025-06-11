@@ -1,5 +1,5 @@
 import express from "express";
-import { body } from "express-validator";
+
 import { registerCaptain, captainLogin, captainProfile, captainLogout } from "../Controllers/Captain.controller.js";
 import { authCaptain } from "../Middelwares/Auth.middelware.js"
 
