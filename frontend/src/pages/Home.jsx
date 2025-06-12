@@ -4,6 +4,9 @@ import { gsap } from 'gsap'
 import 'remixicon/fonts/remixicon.css'
 import LocationSearchPanal from '../components/LocationSearchPanal';
 import VehicalPanal from '../components/VehicalPanal';
+import ConfirmRide from '../components/ConfirmRide';
+import WaitForDriver from '../components/WaitForDriver';
+import LookingForDriver from '../components/LookingForDriver';
 
 function Home() {
   const [pickUpLocation, setPickUpLocation] = useState('');
@@ -11,10 +14,17 @@ function Home() {
   const [panalOpen, setPanalOpen] = useState(false);
   const [arrorw, setArrow] = useState(false)
   const [vehicalPanalOpen, setVehicalPanalOpen] = useState(false);
+  const [confirmeRide, setConfirmeRide] = useState(false);
+  const [vehicalFound, setVehicalFound] = useState(false);
+  const [lookinForDriver, setLookingForDriver] = useState(false);
 
+  const confirmeRideRef = useRef(null);
   const vehicalPanalRef = useRef(null);
   const panalRef = useRef(null);
   const arrowRef = useRef(null);
+  const vehicalFoundRef = useRef(null);
+  const LookingForDriverRef = useRef(null);
+
 
   const submitHandler = (e) => {
     e.preventDefault();
@@ -62,6 +72,48 @@ function Home() {
       })
     }
   }, [vehicalPanalOpen]);
+   
+  useGSAP(function(){
+    if(confirmeRide){
+      gsap.to(confirmeRideRef.current, {
+        transform: 'translateY(0)',
+        height: '65%'
+      })
+    }else{
+      gsap.to(confirmeRideRef.current, {
+        transform: 'translateY(100%)',
+        height: '0%',
+      })
+    }
+  },[confirmeRide]);
+
+  useGSAP(function(){
+    if(vehicalFound){
+      gsap.to(vehicalFoundRef.current, {
+        transform: 'translateY(0)',
+        height: '65%'
+      })
+    }else{
+      gsap.to(vehicalFoundRef.current, {
+        transform: 'translateY(100%)',
+        height: '0%',
+      })
+    }
+  },[vehicalFound]);
+
+  useGSAP(function(){
+    if(lookinForDriver){
+      gsap.to(LookingForDriverRef.current, {
+        transform: 'translateY(0)',
+        height: '65%'
+      })
+    }else{
+      gsap.to(LookingForDriverRef.current, {
+        transform: 'translateY(100%)',
+        height: '0%',
+      })
+    }
+  },[lookinForDriver]);
 
   return (
     <>
@@ -116,7 +168,25 @@ function Home() {
           <h4 className='p-1 text-center w-[95%] absolute top-0' onClick={() => {
             setVehicalPanalOpen(!vehicalPanalOpen);
           }}><i className='text-2xl font-semibold text-gray-200 ri-arrow-down-wide-line'></i> </h4>
-          <VehicalPanal setVehicalPanalOpen={setVehicalPanalOpen}/>
+          <VehicalPanal setVehicalPanalOpen={setVehicalPanalOpen} setConfirmeRide={setConfirmeRide}/>
+        </div>
+        <div ref={confirmeRideRef} className='fixed z-10 bottom-0 translate-y-full bg-white px-3 py-8 w-full h-[0] overflow-y-scroll'>
+          <h4 className='p-1 text-center w-[95%] absolute top-0' onClick={() => {
+            setConfirmeRide(!confirmeRide);
+            setVehicalPanalOpen(!vehicalPanalOpen);
+          }}><i className='text-2xl font-semibold text-gray-200 ri-arrow-down-wide-line'></i> </h4>
+          <ConfirmRide setVehicalFound={setVehicalFound}/>
+        </div>
+        <div ref={vehicalFoundRef} className='fixed z-10 bottom-0 translate-y-full bg-white px-3 py-8 w-full h-[0] overflow-y-scroll'>
+          <LookingForDriver />
+        </div>
+        <div ref={LookingForDriverRef} className='fixed z-10 bottom-0 translate-y-full bg-white px-3 py-8 w-full h-[0] overflow-y-scroll'>
+          <h4 className='p-1 text-center w-[95%] absolute top-0' onClick={() => {
+            setConfirmeRide(!confirmeRide);
+            setVehicalPanalOpen(!vehicalPanalOpen);
+            setLookingForDriver(!lookinForDriver);
+          }}><i className='text-2xl font-semibold text-gray-200 ri-arrow-down-wide-line'></i> </h4>
+          <WaitForDriver />
         </div>
       </div>
     </>
