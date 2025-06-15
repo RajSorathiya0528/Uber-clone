@@ -9,6 +9,8 @@ import CaptainHome from './pages/CaptainHome.jsx'
 import UserProtectedWraper from './pages/UserProtectedWraper.jsx'
 import Start from './pages/Start.jsx'
 import UserLogout from './pages/UserLogout.jsx'
+import Riding from './pages/Riding.jsx'
+import CaptainRiding from './pages/CaptainRiding.jsx'
 
 
 function App() {
@@ -18,6 +20,8 @@ function App() {
       <Routes>
         <Route path='/' element={ <Start/> }/> 
         <Route path='/userLogin' element={ <UserLogin/> }/>
+        <Route path='/riding' element={ <Riding /> } />
+        <Route path='/captainRiding' element={ <CaptainRiding />} />
         <Route path='/userSignUp' element={ <UserSignUp/> }/>
         <Route path='/captainLogin' element={ <CaptainLogin/> }/>
         <Route path='/captainSigiUp' element={ <CaptainSigiUp/> }/>
