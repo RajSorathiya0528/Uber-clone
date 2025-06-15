@@ -5,6 +5,7 @@ import connectDB from './Database/db.js';
 import userRouter from './Routes/User.route.js';
 import captainRouter from './Routes/Captain.route.js';
 import cookieParser from "cookie-parser";
+import mapsRoutes from './Routes/Maps.route.js'
 
 dotenv.config();
 const app = express();
@@ -24,6 +25,7 @@ connectDB();
 
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/captains', captainRouter);
+app.use('/api/maps', mapsRoutes);
 
 app.get('/',(req, res) => {
     res.send("hello world");
