@@ -9,9 +9,9 @@ router.get('/get-coordinates',
     query('address').isString().isLength({ min: 1}),
     authUser, getCoordinates)
 
-router.get('/get-destence-time',query('origin').isString().isLength({ min: 3}),
-    query('destination').isString().isLength({ min : 3}), getDistenceAndTime)
+router.get('/get-destence-time',query('origin').isString().isLength({ min: 1}),
+    query('destination').isString().isLength({ min : 1}), getDistenceAndTime)
 
-router.get('/get-suggetion',query('input').isString().isLength({ min : 3}), getAutocompliteSuggetions)
+router.get('/get-suggetion',query('input').isString().isLength({ min : 1}), getAutocompliteSuggetions)
 
 export default router;

@@ -58,7 +58,41 @@ const getdestenceTime = async (origin, destination) => {
     }
 }
 
+const getAutoCompliteSuggetionsService = async (input) => {
+    if(!input){
+        throw new Error("query is require");
+    }
+
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&key=${apiKey}`;
+
+    try {
+        const response = await axios.get(url);
+        if(response.data.status === 'OK'){
+            return response.data.predictions;
+        }else {
+            throw new Error('unable to fatch suggestion')
+        }
+    } catch (error) {
+        
+    }
+}
+
+const getCaptainsInTheRadius = async (ltd, lng, radius) => {
+    // radius in km
+    const captains = await captainModel.find({
+        location: {
+            $geoWithin: {
+                $centerSphere: [ [ ltd, lng ], radius / 6371 ]
+            }
+        }
+    });
+    return captains;
+}
+
 export { 
     getAddressCoordinate,
-    getdestenceTime
+    getdestenceTime,
+    getAutoCompliteSuggetionsService,
+    getCaptainsInTheRadius
 };

@@ -1,12 +1,15 @@
 import React, {useState, useRef} from 'react'
 import { useGSAP } from '@gsap/react'
+import { useNavigate } from 'react-router-dom'
 import { gsap } from 'gsap'
+import axios from 'axios'
 import 'remixicon/fonts/remixicon.css'
 import LocationSearchPanal from '../components/LocationSearchPanal';
 import VehicalPanal from '../components/VehicalPanal';
 import ConfirmRide from '../components/ConfirmRide';
 import WaitForDriver from '../components/WaitForDriver';
 import LookingForDriver from '../components/LookingForDriver';
+import { UserProvider } from '../context/UserContext'
 
 function Home() {
   const [pickUpLocation, setPickUpLocation] = useState('');
@@ -17,6 +20,11 @@ function Home() {
   const [confirmeRide, setConfirmeRide] = useState(false);
   const [vehicalFound, setVehicalFound] = useState(false);
   const [lookinForDriver, setLookingForDriver] = useState(false);
+  const [pickupSuggestion, setPickupSuggestion] = useState([]);
+  const [destinationSuggestions, setDestinationSuggestions] = useState([])
+  const [activeField, setActiveField] = useState(null);
+  const [ vehicleType, setVehicleType ] = useState(null)
+  const [fare, setFare] = useState({});
 
   const confirmeRideRef = useRef(null);
   const vehicalPanalRef = useRef(null);
@@ -25,10 +33,38 @@ function Home() {
   const vehicalFoundRef = useRef(null);
   const LookingForDriverRef = useRef(null);
 
+  const navigate = useNavigate()
+  const { socket } = useContext(SocketContext)
+  const { user } = useContext(UserProvider)
+
+  const handlePickupChange = async(e) => {
+    setPickUpLocation(e.target.value);
+    try{
+      const response = await axios.get(`http://localhost:3000/api/maps/get-suggetion`, 
+        {params : {input : e.target.value}}
+        //{headers : {Authorization : `Bearer ${localStorage.getItem('token')}` }}
+      )
+      setPickupSuggestion(response.data)
+    }catch(error){
+      throw new Error(error);
+    }
+  }
+
+  const hendleDestinationChange = async (e) => {
+    setDestinationLocation(e.target.value);
+    try{
+      const response = await axios.get(`http://localhost:3000/api/maps/get-suggetion`,
+        {params : {input : e.target.value}},
+        {headers : {Authorization : `Bearer ${localStorage.getItem('token')}` }}
+      )
+      setDestinationSuggestions(response.data)
+    } catch(error){
+      throw new Error(error);
+    }
+  }
 
   const submitHandler = (e) => {
-    e.preventDefault();
-
+     e.preventDefault()
   }
 
   useGSAP(function() {
@@ -115,6 +151,34 @@ function Home() {
     }
   },[lookinForDriver]);
 
+  async function findTrip() {
+    setVehicalPanalOpen(true)
+    setPanalOpen(false)
+    const pickup = pickUpLocation
+    const destination = destinationLocation
+    const fare = await axios.get(`http://localhost:3000/api/v1/rides/get-fare`, {
+      params: { pickup, destination},
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    setFare(fare.data)
+    }
+
+  async function createRide(vehicleType) {
+        const pickup = pickUpLocation;
+        const destination = destinationLocation; 
+        const response = await axios.post(`http://localhost:3000/api/v1/rides/create`, {
+            pickup,
+            destination,
+            vehicleType
+        }, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+        })
+    }
+
   return (
     <>
       <div onclick={()=> {
@@ -141,11 +205,14 @@ function Home() {
                   <input 
                     type="text" 
                     onClick={() => {
+                      console.log("pickup is clicked")
                       setPanalOpen(true)
                       setArrow(true)
+                      setActiveField('pickup')
+                      console.log(activeField)
                     }}
                     value={pickUpLocation}
-                    onChange={(e) => setPickUpLocation(e.target.value)}
+                    onChange={handlePickupChange}
                     placeholder='Add a pick-up Location' 
                     className='mx-2 my-2 w-full bg-gray-200 py-3 pl-5 rounded'/>
                   <input 
@@ -153,32 +220,62 @@ function Home() {
                     onClick={() => {
                       setPanalOpen(true)
                       setArrow(true)
+                      setActiveField('destination')
                     }} 
                     value={destinationLocation}
-                    onChange={(e) => setDestinationLocation(e.target.value)}
+                    onChange={hendleDestinationChange}
                     placeholder='Add a destination Location' 
                     className='mx-2 my-1 w-full bg-gray-200 py-3 pl-5 rounded'/>
                 </form>
+                <button
+                  onClick={findTrip}
+                  className='bg-black text-white px-4 py-2 rounded-lg mt-3 w-full'>
+                  Find Trip
+                </button>
               </div>
               <div className='bg-white h-0 p-0' ref={panalRef}>
-                    <LocationSearchPanal setArrow={setArrow} setPanalOpen={setPanalOpen} setVehicalPanalOpen={setVehicalPanalOpen}/>
+                    <LocationSearchPanal 
+                    suggestion = {activeField == 'pickup' ? pickupSuggestion : destinationSuggestions}
+                    setArrow = {setArrow} 
+                    setPanalOpen = {setPanalOpen} 
+                    setVehicalPanalOpen = {setVehicalPanalOpen}
+                    setPickUpLocation = {setPickUpLocation}
+                    setDestinationLocation = {setDestinationLocation} 
+                    activeField = {activeField} />
               </div>
         </div>
         <div ref={vehicalPanalRef} className='fixed z-10 bottom-0 translate-y-full bg-white px-3 py-8 w-full h-[0] overflow-y-scroll'>
           <h4 className='p-1 text-center w-[95%] absolute top-0' onClick={() => {
             setVehicalPanalOpen(!vehicalPanalOpen);
           }}><i className='text-2xl font-semibold text-gray-200 ri-arrow-down-wide-line'></i> </h4>
-          <VehicalPanal setVehicalPanalOpen={setVehicalPanalOpen} setConfirmeRide={setConfirmeRide}/>
+          <VehicalPanal 
+            selectVehicle={setVehicleType}
+            setVehicalPanalOpen={setVehicalPanalOpen} 
+            setConfirmeRide={setConfirmeRide} 
+            fare={fare}/>
         </div>
         <div ref={confirmeRideRef} className='fixed z-10 bottom-0 translate-y-full bg-white px-3 py-8 w-full h-[0] overflow-y-scroll'>
           <h4 className='p-1 text-center w-[95%] absolute top-0' onClick={() => {
             setConfirmeRide(!confirmeRide);
             setVehicalPanalOpen(!vehicalPanalOpen);
           }}><i className='text-2xl font-semibold text-gray-200 ri-arrow-down-wide-line'></i> </h4>
-          <ConfirmRide setVehicalFound={setVehicalFound}/>
+          <ConfirmRide
+          createRide = {createRide}
+          pickUpLocation = {pickUpLocation}
+          destinationLocation = {destinationLocation} 
+          fare = {fare}
+          vehicleType = {vehicleType}
+          setConfirmeRide = {setConfirmeRide}
+          setVehicalFound={setVehicalFound}/>
         </div>
         <div ref={vehicalFoundRef} className='fixed z-10 bottom-0 translate-y-full bg-white px-3 py-8 w-full h-[0] overflow-y-scroll'>
-          <LookingForDriver />
+          <LookingForDriver 
+          createRide = {createRide}
+          pickUpLocation = {pickUpLocation}
+          destinationLocation = {destinationLocation}
+          fare = {fare}
+          vehicleType = {vehicleType}
+          setVehicalFound = {setVehicalFound}/>
         </div>
         <div ref={LookingForDriverRef} className='fixed z-10 bottom-0 translate-y-full bg-white px-3 py-8 w-full h-[0] overflow-y-scroll'>
           <h4 className='p-1 text-center w-[95%] absolute top-0' onClick={() => {
@@ -186,7 +283,9 @@ function Home() {
             setVehicalPanalOpen(!vehicalPanalOpen);
             setLookingForDriver(!lookinForDriver);
           }}><i className='text-2xl font-semibold text-gray-200 ri-arrow-down-wide-line'></i> </h4>
-          <WaitForDriver />
+          <WaitForDriver 
+            ride = {ride}
+          />
         </div>
       </div>
     </>

@@ -12,7 +12,7 @@ function ConfirmRide(props) {
               <i className='ri-map-pin-user-fill text-gray-700 text-3xl'></i>
             </div>
             <div className='w-[83%]'>
-              <h3 className='text-base'>B10 Near Rajwadi cafe Royal City Petrol Pump, Gandhinagar, Gujarat</h3>
+              <h3 className='text-base'>{props.pickUpLocation}</h3>
             </div>
           </div>
           <div className='flex justify-start gap-3 items-start w-full p-3 border-b-2 border-gray-300'>
@@ -20,7 +20,7 @@ function ConfirmRide(props) {
               <i className='ri-map-pin-2-fill text-gray-700 text-3xl'></i>
             </div>
             <div className='w-[83%]'>
-              <h3 className='text-base'>Smart City Point galkasdi ahemdabad, Gujarat</h3>
+              <h3 className='text-base'>{props.destinationLocation}</h3>
             </div>
           </div>
           <div className='flex justify-start gap-3 items-center w-full p-3 border-b-2 border-gray-300'>
@@ -28,12 +28,14 @@ function ConfirmRide(props) {
               <i className='ri-currency-line text-gray-700 text-3xl'></i>
             </div>
             <div className='w-[83%] flex justify-between items-center'>
-              <h3 className='text-xl font-semibold'>$193.21</h3>
+              <h3 className='text-xl font-semibold'>{props.fare[ props.vehicleType ]}</h3>
             </div>
           </div>
         </div>
         <button onClick={()=> {
           props.setVehicalFound(true)
+          props.setConfirmRide(false)
+          props.createRide()
         }}className='w-full mt-5 bg-green-200 text-green-900 font-semibold py-3 rounded text-2xl border-0 border-green-900 active:border-3'>
           Confirm Ride
         </button>

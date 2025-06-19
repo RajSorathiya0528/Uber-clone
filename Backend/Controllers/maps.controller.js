@@ -1,4 +1,4 @@
-import {getAddressCoordinate, getdestenceTime} from '../Services/Maps.service.js'
+import {getAddressCoordinate, getdestenceTime, getAutoCompliteSuggetionsService} from '../Services/Maps.service.js'
 import { validationResult } from 'express-validator';
 
 
@@ -49,7 +49,21 @@ const getDistenceAndTime = async(req, res) => {
 }
 
 const getAutocompliteSuggetions = async(req, res) => {
+    try {
+        const errors = validationResult(req);
+        if(!errors.isEmpty()){
+            return res.status(400).json({errors : errors.array()});
+        }
 
+        const {input} = req.query;
+
+        const suggestion = await getAutoCompliteSuggetionsService(input);
+
+        res.status(200).json(suggestion);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message : "internal server error"});
+    }
 }
 
 export {
